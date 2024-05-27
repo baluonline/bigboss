@@ -1,15 +1,15 @@
 export class Habit {
     id: string;
-    fullName: string;
+    name: string;
     points: number;
 
     constructor(
         id: string,
-        fullName: string,
+        name: string,
         points: number
     ) {
         this.id = id;
-        this.fullName = fullName;
-        this.points = points
+        this.name = name;
+        this.points = points;
     }
 }

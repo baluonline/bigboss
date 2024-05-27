@@ -1,18 +1,20 @@
 export class Kid {
-  id: string;
+  id: number;
   fullName: any;
   emailAddress: string;
   age: number;
   gender: string;
   zipcode: number;
+  favoriteFood: string
 
   constructor(
-    id: string,
+    id: number,
     fullName: string,
     emailAddress: string,
     age: number,
     gender: string,
-    zipcode: number
+    zipcode: number,
+    favoriteFood: string
   ) {
     this.id = id;
     this.fullName = fullName;
@@ -20,5 +22,6 @@ export class Kid {
     this.age = age;
     this.gender = gender;
     this.zipcode = zipcode;
+    this.favoriteFood = favoriteFood;
   }
 }

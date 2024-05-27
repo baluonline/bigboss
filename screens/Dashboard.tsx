@@ -1,94 +1,129 @@
-import { FC, useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { StyleSheet, Text, View, Button } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { BottomNavigation, Button, Card } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-
 import { NavRoutes } from "../Constants/NavigationRoutes";
-import Colors from "..//Constants/Colors";
-import { Habit } from "..//model/Habit";
-import CustomButton from "../UI/Button";
 import {
-  AddHabit,
+  addHabit,
   fetchHabit,
   fetchKidList,
   initHabitDb,
-} from "..//utils/database";
+  initKidsDb,
+  isTableExists,
+} from "../utils/database";
+import { loadKidssList } from "../store/redux/kids";
+import { Habit } from "model/Habit";
 import KidsListComponent from "./KidsList";
-import { addNewKid, deleteKid, loadKidssList } from "../store/redux/kids";
-
-interface IProps {
-  imageUrl?: string;
-}
+import Colors from "Constants/Colors";
+import { BottomTabs } from "../UI/BottomTabs";
 
 export const Dashboard = (): JSX.Element => {
-  const [showKidsList, setShowKidsList] = useState(false);
+  const [showKidsList, setShowKidsList] = useState(true);
   const dispatch = useDispatch();
-
-  /*   const handleHabit = async () => {
-    const habit = new Habit("1", "baa", 1);
-    await initHabitDb();
-    await AddHabit(habit);
-    await fetchHabit();
-    
+  const kids = useSelector((state) => {
+    return state.kidsStore.kids || [];
+  });
+  const navigation = useNavigation(); // Use useNavigation directly
+  const fetchData = async () => {
+    try {
+      var kidsList;
+      fetchKidList()
+        .then((result) => {
+          console.log("kidsList " + JSON.stringify(result));
+          dispatch(loadKidssList(result));
+          kidsList = { ...result };
+          console.log("showKidsList" + showKidsList);
+          setShowKidsList(result.length > 0);
+        })
+        .catch((err) => {
+          console.log("kids list " + err);
+        });
+    } catch (error) {
+      console.log("failed to fetch kids  " + error);
+    }
   };
 
-  useEffect(() => {
-    handleHabit();
-  }, []); */
+  useEffect(
+    useCallback(() => {
+      const unsubscribe = navigation.addListener("focus", () => {
+        initKidsDb()
+          .then((result) => {
+            console.log("initiated kids db");
+          })
+          .catch((err) => {
+            console.log("kids list " + err);
+          });
+        // Use navigation directly
+        fetchData();
+      });
+      return () => unsubscribe();
+    }, [navigation])
+  );
 
-  useLayoutEffect(() => {
-    const fetchData = async () => {
-      try {
-        const kidsList: any = await fetchKidList();
-        console.log("kids fetch kids ", JSON.stringify(kidsList));
-        dispatch(loadKidssList({ kidsList }));
-        if (kidsList.length > 0) {
-          setShowKidsList(true);
-        } else {
-          setShowKidsList(false);
-          throw new Error("No kids");
-        }
-      } catch (error) {
-        console.log("failed to fetch kids " + error);
-      }
-    };
-    fetchData();
-    console.log("show kids " + showKidsList);
-  }, []);
+  useEffect(
+    useCallback(() => {
+      const unsubscribe = navigation.addListener("focus", () => {
+        let habitsTableExisted = false;
+        isTableExists("Habits")
+          .then(() => {
+            console.log("Habit table is already existed");
+            return;
+          })
+          .catch((err) => {
+            habitsTableExisted = true;
+          });
 
-  const kids = useSelector((state) => state.kidsStore.kids) || [];
-  console.log("kids " + JSON.stringify(kids));
-  const { navigate } = useNavigation();
+        initHabitDb()
+          .then((result) => {
+            console.log("initiated Habits db");
+          })
+          .catch((err) => {
+            console.log("Habit DB is not created", err);
+          });
+      });
+      return () => unsubscribe();
+    }, [navigation])
+  );
 
-  const addNewKid = useCallback(
-    () => navigate(NavRoutes.ADD_NEWKID),
-    [navigate]
+  const onPressAddNewKid = useCallback(
+    () => navigation.navigate(NavRoutes.ADD_NEWKID), // Use navigation.navigate
+    [navigation]
+  );
+
+  const onClickAddNewHabit = useCallback(
+    () => navigation.navigate(NavRoutes.ADD_NEW_HABIT), // Use navigation.navigate
+    [navigation]
   );
 
   return (
     <View style={styles.dashboard}>
-      {kids.length < 1 ? (
-        <Text style={styles.fallBackText}>
-          No kids have added, Please add your kids
-        </Text>
-      ) : (
+      {showKidsList ? (
         <View>
-          <Text>Kids List </Text>
-          <KidsListComponent kidsList={kids} />
+          {/* <Text style={{ alignItems: "center" }}>Babu</Text> */}
+          <KidsListComponent />
         </View>
+      ) : (
+        <Text style={styles.fallBackText}>
+          No kids have been added. Please add your kids.
+        </Text>
       )}
+
       <View style={styles.btnContainer}>
-        <View style={styles.addBtn}>
-          <CustomButton onPress={addNewKid} style={styles.addBtn}>
-            <Text style={styles.btnText}>Add Your Kid</Text>
-          </CustomButton>
-        </View>
-        <View style={styles.addBtn}>
-          <CustomButton onPress={addNewKid} style={styles.addBtn}>
-            <Text style={styles.btnText}>Add New Habit</Text>
-          </CustomButton>
-        </View>
+        <Button
+          style={styles.addBtn}
+          mode="contained-tonal"
+          onPress={onPressAddNewKid}
+          buttonColor={Colors.red500}
+          textColor={Colors.tertiary}
+        >
+          Add Your Kid
+        </Button>
       </View>
     </View>
   );
@@ -97,40 +132,26 @@ export const Dashboard = (): JSX.Element => {
 const styles = StyleSheet.create({
   dashboard: {
     flex: 1,
-    backgroundColor: "white",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
+    padding: 20,
+    marginBottom: 10,
+    backgroundColor: "none",
   },
   fallBackText: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
     margin: 10,
-    fontSize: 30,
+    fontSize: 16,
   },
   addBtn: {
-    // color: "#ca1212",
-    flex: 1,
     borderRadius: 10,
-    height: "25%",
-    // padding: 10,
     margin: 10,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  btnText: {
-    fontSize: 20,
-    fontWeight: "700",
-  },
-  iconStyle: {
-    color: "#ca1212",
+    padding: 10,
   },
   btnContainer: {
-    flex: 1,
     flexDirection: "row",
-    display: "flex",
     padding: 5,
     margin: 5,
   },

@@ -1,110 +1,78 @@
-import { StatusBar } from "expo-status-bar";
-import { Button, StyleSheet, Text, View, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Button, Image, StyleSheet, Text, View } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { Provider } from "react-redux";
-import AppLoading from "expo-app-loading";
 
+import {
+  MD3LightTheme as DefaultTheme,
+  PaperProvider,
+} from "react-native-paper";
+
+import { store } from "./store/redux/store";
 import Colors from "./Constants/Colors";
 import { NavRoutes } from "./Constants/NavigationRoutes";
-import { Dashboard } from "./screens/Dashboard";
-import { AddNewKids } from "./screens/AddNewKids";
+import { BottomTabs } from "./UI/BottomTabs";
 import KidDetails from "./screens/KidDetails";
-import { FC, useEffect, useState } from "react";
-import { store } from "./store/redux/store";
-import { initKidsDb } from "./utils/database";
+import { Dashboard } from "screens/Dashboard";
+import { AddNewHabit } from "screens/AddNewHabit";
 
 export type RootStackParamList = {
   Dashboard: undefined;
   AddNewKids: undefined;
+  KidDetails: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    Colors,
+  },
+};
 export default function App() {
-  const [dbInitialized, setDbInitialized] = useState(false);
-
-  useEffect(() => {
-    async function initiateTable() {
-      const isTableCreated = await initKidsDb();
-      console.log("isTableCreated" + isTableCreated);
-      if (isTableCreated) {
-        setDbInitialized(true);
-      } else {
-        setDbInitialized(false);
-      }
-    }
-    initiateTable();
-  }, []);
-
-  if (!dbInitialized) {
-    return <AppLoading />;
-  }
-
   return (
     <NavigationContainer>
-      <Provider store={store}>
-        <Stack.Navigator
-          screenOptions={{
-            // headerStyle: { backgroundColor: Colors.pink50 },
-            headerBackground: () => (
-              <Image
-                style={styles.container}
-                source={{ uri: "./assets/smartkids_title.png" }}
-              />
-            ),
-            headerTitleAlign: "center",
-            headerTintColor: "#d20b0b",
-            contentStyle: {
-              backgroundColor: "#d20b0b",
-              alignContent: "center",
-              justifyContent: "center",
-            },
-          }}
-        >
-          <Stack.Screen
-            name={NavRoutes.NAV_DASHBOARD}
-            component={Dashboard}
-            options={({ navigation }) => ({
-              title: "Dashboard",
-              headerRight: ({ tintColor }) => (
-                <Button
-                  onPress={() => navigation.navigate(NavRoutes.NAV_DASHBOARD)}
-                  title="+"
-                  color={tintColor}
-                />
-              ),
-            })}
-          />
-          <Stack.Screen
-            name={NavRoutes.ADD_NEWKID}
-            component={AddNewKids}
-            options={({ navigation }) => ({
-              title: "Add New Kid",
-              headerRight: ({ tintColor }) => (
-                <Button
-                  onPress={() => navigation.navigate("Dashboard")}
-                  title="+"
-                  color={tintColor}
-                />
-              ),
-            })}
-          />
-          <Stack.Screen
-            name={NavRoutes.KID_DETAILS}
-            component={KidDetails}
-            options={({ navigation }) => ({
-              title: "Kid Details",
-              headerRight: ({ tintColor }) => (
-                <Button
-                  onPress={() => navigation.navigate("Dashboard")}
-                  title="+"
-                  color={tintColor}
-                />
-              ),
-            })}
-          />
-        </Stack.Navigator>
+      <Provider store={store} children={undefined}>
+        <PaperProvider>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="BottomTabs"
+              component={BottomTabs}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={NavRoutes.KID_DETAILS}
+              component={KidDetails}
+              options={({ navigation }) => ({
+                title: "Kid Details",
+                headerRight: () => (
+                  <Button
+                    onPress={() => navigation.navigate(NavRoutes.KID_DETAILS)}
+                    title="Kid Details"
+                    color={Colors.red500}
+                  />
+                ),
+              })}
+            />
+            <Stack.Screen
+              name={NavRoutes.ADD_NEW_HABIT}
+              component={AddNewHabit}
+              options={({ navigation }) => ({
+                title: "Add New Habit",
+                headerRight: () => (
+                  <Button
+                    onPress={() => navigation.navigate(NavRoutes.KID_DETAILS)}
+                    title="Add New Habit"
+                    color={Colors.red500}
+                  />
+                ),
+              })}
+            />
+          </Stack.Navigator>
+        </PaperProvider>
       </Provider>
     </NavigationContainer>
   );
@@ -115,6 +83,16 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "white",
+    backgroundColor: Colors.red500,
+  },
+  headerImage: {
+    flex: 1,
+    resizeMode: "contain",
+    width: "100%",
+  },
+  contentStyle: {
+    backgroundColor: Colors.red500,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

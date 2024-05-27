@@ -1,12 +1,15 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useIsFocused } from "@react-navigation/native";
 import { fetchKidDetails } from "./../utils/database";
 import { Kid } from "..//model/Kid";
+import Colors from "Constants/Colors";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   item: {
     padding: 20,
@@ -19,32 +22,34 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    flex: 1,
     fontSize: 32,
-    color: "white",
+    color: Colors.red500,
   },
 });
 
 const KidDetails: React.FC = () => {
   const route = useRoute();
   const [kidDetails, setKidDetails] = useState([Kid]);
-  const { id } = route.params as { id: number };
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    const fetchKid = async (id: number) => {
-      const selectedKidDetail = await fetchKidDetails(id);
-      console.log("kid Deatils " + JSON.stringify(selectedKidDetail));
-      setKidDetails(selectedKidDetail[0]);
-    };
-    fetchKid(id);
-    return () => {
-      setKidDetails([]);
-    };
-  }, [id]);
+    if (isFocused && route.params) {
+      console.log("kid id: " + route.params?.id);
+      const id = route.params?.id;
+      const fetchKid = async (id: number) => {
+        const selectedKidDetail: any = await fetchKidDetails(id);
+        // console.log("kid Deatils " + JSON.stringify(selectedKidDetail));
+        setKidDetails(selectedKidDetail[0]);
+      };
+      fetchKid(id);
+    }
+  }, [isFocused, route]);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}> {kidDetails.fullName}'s Points</Text>
+        <Text style={styles.title}>{kidDetails.fullName}</Text>
+        <Text style={styles.title}>{kidDetails.favoriteFood}</Text>
+        <Text style={styles.title}>{kidDetails.age}</Text>
       </View>
     </View>
   );

@@ -1,5 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+  useIsFocused,
+} from "@react-navigation/native";
 import { NavRoutes } from "../Constants/NavigationRoutes";
 import {
   FlatList,
@@ -9,17 +13,11 @@ import {
   StyleSheet,
   StatusBar,
   View,
+  ScrollView,
 } from "react-native";
-
-interface Kid {
-  fullName: string;
-  id: number;
-  age: number;
-}
-
-interface KidsListComponentProps {
-  kidsList: Kid[];
-}
+import { Kid } from "../model/Kid";
+import { useSelector } from "react-redux";
+import Colors from "Constants/Colors";
 
 interface ItemProps {
   kid: Kid;
@@ -31,7 +29,7 @@ interface ItemProps {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
+    marginTop: StatusBar.currentHeight,
   },
   item: {
     padding: 20,
@@ -57,9 +55,12 @@ const Item: React.FC<ItemProps> = ({
   </TouchableOpacity>
 );
 
-const KidsListComponent: React.FC<KidsListComponentProps> = ({ kidsList }) => {
+const KidsListComponent = () => {
   const [selectedId, setSelectedId] = useState<number>();
-
+  let kids = useSelector((state) => {
+    return state.kidsStore.kids || [];
+  });
+  console.log("kids list component " + JSON.stringify(kids[0]));
   const { navigate } = useNavigation();
 
   const onPressKids = useCallback(
@@ -71,9 +72,9 @@ const KidsListComponent: React.FC<KidsListComponentProps> = ({ kidsList }) => {
   );
 
   const renderItem = ({ item }: { item: Kid }) => {
-    const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
+    const backgroundColor =
+      item.gender === "boy" ? Colors.primary500 : Colors.pink50;
     const color = item.id === selectedId ? "white" : "black";
-
     return (
       <Item
         kid={item}
@@ -85,15 +86,16 @@ const KidsListComponent: React.FC<KidsListComponentProps> = ({ kidsList }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text>Kids list</Text>
+    <View>
       <FlatList
-        data={kidsList}
+        data={kids[0]}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => {
+          return item.id.toString();
+        }}
         extraData={selectedId}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

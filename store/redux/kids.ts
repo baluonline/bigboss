@@ -1,24 +1,30 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+
+const initialState: any = {
+  kids: [],
+
+};
 const kidsSlice = createSlice({
   name: 'FavoriteKids',
-  initialState: {
-    kids: []
-  },
+  initialState,
   reducers: {
-
     addNewKid: (state, action) => {
-      if (state.kids.find(kid => action.payload.id != kid.id)) {
-        state.kids = { ...state.kids, ...action.payload.kid }
+      const newKid = action.payload;
+      // Check if the kid already exists in the state
+      if (!state.kids.some(kid => kid.id === newKid.id)) {
+        state.kids.push(newKid);
       }
-
+      console.log('add new Kids ' + JSON.stringify(state))
     },
     deleteKid: (state, action) => {
       state.kids.splice(state.kids.indexOf(action.payload.kid.id), 1);
     },
     loadKidssList: (state, action) => {
-      console.log("action " + JSON.stringify(action))
-      state.kids = action.payload.kidsList;
+      console.log('before state changes ' + state.kids)
+      console.log("action.payload ", action.payload)
+      state.kids.push(action.payload);
+      console.log("after  kids state " + JSON.stringify(state))
     },
   }
 });
