@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
-
+import { uniqBy } from 'lodash';
 
 const initialState: any = {
   kids: [],
-
+  habits: []
 };
 const kidsSlice = createSlice({
   name: 'FavoriteKids',
@@ -20,16 +20,21 @@ const kidsSlice = createSlice({
     deleteKid: (state, action) => {
       state.kids.splice(state.kids.indexOf(action.payload.kid.id), 1);
     },
-    loadKidssList: (state, action) => {
-      console.log('before state changes ' + state.kids)
-      console.log("action.payload ", action.payload)
-      state.kids.push(action.payload);
-      console.log("after  kids state " + JSON.stringify(state))
+    loadKidsList: (state, action) => {
+      console.log('action ' + JSON.stringify(action.payload))
+      state.kids = uniqBy([...state.kids, ...action.payload], 'id');
     },
+    loadHabitsList: (state, action) => {
+      state.habits = uniqBy([...state.habits, ...action.payload], 'name');
+    }
   }
 });
 
-export const loadKidssList = kidsSlice.actions.loadKidssList;
+
+export const loadKidsList = kidsSlice.actions.loadKidsList;
 export const addNewKid = kidsSlice.actions.addNewKid;
 export const deleteKid = kidsSlice.actions.deleteKid;
+
+export const loadHabitsList = kidsSlice.actions.loadHabitsList;
+
 export default kidsSlice.reducer;

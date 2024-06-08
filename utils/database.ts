@@ -36,6 +36,7 @@ export const isTableExists = async (tableName: string) => {
    return promise; */
 };
 
+//create kids DB if not yet existed.
 export const initKidsDb = () => {
   const promise = new Promise((resolve, reject) => {
     let kidsTableIsExisted = false
@@ -57,7 +58,8 @@ export const initKidsDb = () => {
           age NUMBER NOT NULL,
           gender TEXT NOT NULL,
           zipcode NUMBER NOT NULL,
-          favoriteFood TEXT NOT NULL
+          favoriteFood TEXT NOT NULL, 
+          habits TEXT
         )`,
           [],
           (tx, results) => {
@@ -78,6 +80,7 @@ export const initKidsDb = () => {
 }
 
 
+//to add a new kid 
 export const addNewKid = async (kid: Kid): Promise<void> => {
 
   return new Promise<void>((resolve, reject) => {
@@ -99,6 +102,26 @@ export const addNewKid = async (kid: Kid): Promise<void> => {
   });
 };
 
+//Update existing kid with habits data
+export const updateKid = async (kid: Kid): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    kidsDb.transaction((tx) => {
+      tx.executeSql(
+        `UPDATE kids 
+        SET habits = ? where id = ?`,
+        [kid.habits, kid.id],
+        (_, results) => {
+          console.log('Data inserted successfully');
+          resolve();
+        },
+        (_, err): boolean | any => {
+          console.error('Error UPDATing kids data:', err);
+          reject(err);
+        }
+      );
+    });
+  });
+};
 export const fetchKidList = async (): Promise<Kid[]> => {
 
   return new Promise<Kid[]>((resolve, reject) => {
@@ -166,7 +189,7 @@ export const initHabitDb = () => {
     // Create a table (if it doesn't exist)
     db.transaction((tx) => {
       tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS Habit (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, points NUMBER )',
+        'CREATE TABLE IF NOT EXISTS Habit (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, points NUMBER )',
         [],
         (tx, results) => {
           console.log('Habit table created successfully');
@@ -185,12 +208,11 @@ export const initHabitDb = () => {
 export const addHabit = async (habit: Habit) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
-      tx.executeSql(
-        'INSERT INTO Habit (name,points) VALUES (?,?)',
+      tx.executeSql('INSERT INTO Habit (name,points) VALUES (?,?)',
         [habit.name, habit.points],
         (tx, results) => {
           console.log('Data inserted successfully');
-          resolve(true)
+          resolve(results)
         },
         (_, err): boolean | any => {
           console.error('Error inserting dataF:', err);
@@ -202,7 +224,7 @@ export const addHabit = async (habit: Habit) => {
 }
 
 
-export const fetchHabit = async () => {
+export const fetchHabits = async () => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
@@ -216,7 +238,7 @@ export const fetchHabit = async () => {
             const row = rows.item(i);
             const Habit: Habit = {
               id: row.id,
-              name: row.points,
+              name: row.name,
               points: row.points
             };
             habits.push(Habit);
