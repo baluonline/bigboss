@@ -48,13 +48,6 @@ export default function App() {
               component={KidDetails}
               options={({ navigation }) => ({
                 title: "Kid Details",
-                headerRight: () => (
-                  <Button
-                    onPress={() => navigation.navigate(NavRoutes.KID_DETAILS)}
-                    title="Kid Details"
-                    color={Colors.red500}
-                  />
-                ),
               })}
             />
             <Stack.Screen

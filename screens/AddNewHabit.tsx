@@ -56,6 +56,7 @@ export const AddNewHabit = (): JSX.Element => {
     const uniqueId = `${timestamp}-${randomNumber}`;
 
     const habit = new Habit(uniqueId, habitName, parseInt(maxPoints));
+    console.log("habit " + JSON.stringify(habit));
     addHabit(habit)
       .then((res) => {
         console.log("add new habit ", res);

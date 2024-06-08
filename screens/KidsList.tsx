@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { Suspense, useCallback, useState } from "react";
 import {
   useNavigation,
   useRoute,
@@ -57,10 +57,11 @@ const Item: React.FC<ItemProps> = ({
 
 const KidsListComponent = () => {
   const [selectedId, setSelectedId] = useState<number>();
-  let kids = useSelector((state) => {
+  const kids = useSelector((state: any) => {
+    console.log("kids store " + JSON.stringify(state));
     return state.kidsStore.kids || [];
   });
-  console.log("kids list component " + JSON.stringify(kids[0]));
+  // console.log("kids list component " + JSON.stringify(kids[0]));
   const { navigate } = useNavigation();
 
   const onPressKids = useCallback(
@@ -86,16 +87,18 @@ const KidsListComponent = () => {
   };
 
   return (
-    <View>
-      <FlatList
-        data={kids[0]}
-        renderItem={renderItem}
-        keyExtractor={(item) => {
-          return item.id.toString();
-        }}
-        extraData={selectedId}
-      />
-    </View>
+    <Suspense>
+      <View>
+        <FlatList
+          data={kids}
+          renderItem={renderItem}
+          keyExtractor={(item) => {
+            return item.id.toString();
+          }}
+          extraData={selectedId}
+        />
+      </View>
+    </Suspense>
   );
 };
 

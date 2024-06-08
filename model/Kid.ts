@@ -5,7 +5,8 @@ export class Kid {
   age: number;
   gender: string;
   zipcode: number;
-  favoriteFood: string
+  favoriteFood: string;
+  habits: []
 
   constructor(
     id: number,
@@ -14,7 +15,8 @@ export class Kid {
     age: number,
     gender: string,
     zipcode: number,
-    favoriteFood: string
+    favoriteFood: string,
+    habits: string
   ) {
     this.id = id;
     this.fullName = fullName;
@@ -23,5 +25,6 @@ export class Kid {
     this.gender = gender;
     this.zipcode = zipcode;
     this.favoriteFood = favoriteFood;
+    this.habits = habits
   }
 }

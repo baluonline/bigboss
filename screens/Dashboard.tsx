@@ -17,49 +17,43 @@ import {
   initKidsDb,
   isTableExists,
 } from "../utils/database";
-import { loadKidssList } from "../store/redux/kids";
+import { loadKidsList } from "../store/redux/kids";
 import { Habit } from "model/Habit";
 import KidsListComponent from "./KidsList";
 import Colors from "Constants/Colors";
 import { BottomTabs } from "../UI/BottomTabs";
+import * as _ from "lodash";
 
 export const Dashboard = (): JSX.Element => {
   const [showKidsList, setShowKidsList] = useState(true);
   const dispatch = useDispatch();
-  const kids = useSelector((state) => {
+  const kids = useSelector((state: any) => {
+    console.log("kids store " + JSON.stringify(state));
     return state.kidsStore.kids || [];
   });
   const navigation = useNavigation(); // Use useNavigation directly
-  const fetchData = async () => {
+  const fetchData = () => {
     try {
       var kidsList;
       fetchKidList()
         .then((result) => {
-          console.log("kidsList " + JSON.stringify(result));
-          dispatch(loadKidssList(result));
+          // console.log("kidsList " + JSON.stringify(result));
+          dispatch(loadKidsList(result));
           kidsList = { ...result };
-          console.log("showKidsList" + showKidsList);
           setShowKidsList(result.length > 0);
         })
         .catch((err) => {
-          console.log("kids list " + err);
+          console.log("kids list  fetching" + err);
         });
     } catch (error) {
-      console.log("failed to fetch kids  " + error);
+      console.log("fetch kids try catch block " + error);
     }
   };
 
   useEffect(
     useCallback(() => {
       const unsubscribe = navigation.addListener("focus", () => {
-        initKidsDb()
-          .then((result) => {
-            console.log("initiated kids db");
-          })
-          .catch((err) => {
-            console.log("kids list " + err);
-          });
-        // Use navigation directly
+        initKidsDb();
         fetchData();
       });
       return () => unsubscribe();

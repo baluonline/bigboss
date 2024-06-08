@@ -38,7 +38,7 @@ export const BottomTabs = (): JSX.Element => {
       initialRouteName={NavRoutes.NAV_DASHBOARD}
       // screenOptions={{ headerShown: false }}
       screenOptions={{
-        tabBarActiveTintColor: "#e91e63",
+        tabBarActiveTintColor: Colors.red500,
       }}
     >
       <Tab.Screen
